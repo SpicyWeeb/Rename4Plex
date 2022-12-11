@@ -90,15 +90,30 @@ tab_widget.addTab(tv_shows_tab_contents, "TV Shows")
 
 def on_checkbox_toggled(checked):
     if checked:
-        # Run your code here
         import os
         import re
         import time
-
+        import shutil
+        
         # Define the directories
         source_dir = source_directory_edit.text()
         target_dir = target_directory_edit.text()
+        
+        # get all files in source_dir and its subdirectories
+        all_files = []
+        for root, dirs, files in os.walk(source_dir):
+            for file in files:
+                all_files.append(os.path.join(root, file))
 
+        # move all files to the source_dir
+        for file in all_files:
+            shutil.move(file, source_dir)
+
+        # delete all empty subdirectories
+        for root, dirs, files in os.walk(source_dir, topdown=False):
+            for dir in dirs:
+                os.rmdir(os.path.join(root, dir))
+        
         # Define the regex pattern for removing everything inside brackets and parentheses
         pattern = r"\[.*?\]|\(.*?\)"
 
@@ -174,6 +189,8 @@ checkbox.stateChanged.connect(on_checkbox_toggled)
 movies_layout = QtWidgets.QVBoxLayout()
 
 # Add any widgets you want to the "Movies" tab layout
+label = QtWidgets.QLabel("Nothing here yet")
+movies_layout.addWidget(label)
 
 # Create a widget to hold the "Movies" tab layout
 movies_widget = QtWidgets.QWidget()
@@ -192,6 +209,8 @@ tab_widget.addTab(movies_tab_contents, "Movies")
 music_layout = QtWidgets.QVBoxLayout()
 
 # Add any widgets you want to the "Music" tab layout
+label = QtWidgets.QLabel("Working on one thing at a time")
+music_layout.addWidget(label)
 
 # Create a widget to hold the "Music" tab layout
 music_widget = QtWidgets.QWidget()
