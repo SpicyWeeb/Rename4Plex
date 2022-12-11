@@ -99,6 +99,19 @@ def on_checkbox_toggled(checked):
         source_dir = source_directory_edit.text()
         target_dir = target_directory_edit.text()
         
+        # Define the regex pattern for removing everything inside brackets and parentheses
+        pattern = r"\[.*?\]|\(.*?\)"
+        
+        # get all directories in source_dir and its subdirectories
+        all_dirs = []
+        for root, dirs, files in os.walk(source_dir):
+            for dir in dirs:
+                all_dirs.append(os.path.join(root, dir))
+
+        # rename all directories to "temp"
+        for dir in all_dirs:
+            os.rename(dir, os.path.join(os.path.dirname(dir), "temp"))
+        
         # get all files in source_dir and its subdirectories
         all_files = []
         for root, dirs, files in os.walk(source_dir):
@@ -108,14 +121,11 @@ def on_checkbox_toggled(checked):
         # move all files to the source_dir
         for file in all_files:
             shutil.move(file, source_dir)
-
+            
         # delete all empty subdirectories
         for root, dirs, files in os.walk(source_dir, topdown=False):
             for dir in dirs:
                 os.rmdir(os.path.join(root, dir))
-        
-        # Define the regex pattern for removing everything inside brackets and parentheses
-        pattern = r"\[.*?\]|\(.*?\)"
 
         # Get a list of all files in the source directory
         files = os.listdir(source_dir)
