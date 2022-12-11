@@ -12,6 +12,10 @@ def browse_directory(line_edit):
     # Set the text of the line edit to the selected directory
     line_edit.setText(directory)
 
+# Create a layout for the "TV Shows" tab
+tab_widget = QtWidgets.QTabWidget()
+
+# Add any widgets you want to the "TV Shows" tab layout
 # Create a checkbox and a spin box
 checkbox = QtWidgets.QCheckBox("Enable")
 spinbox = QtWidgets.QSpinBox()
@@ -71,13 +75,9 @@ tv_shows_layout.addWidget(source_browse_button)
 tv_shows_layout.addWidget(target_directory_edit)
 tv_shows_layout.addWidget(target_browse_button)
 
-
 # Create a widget to hold the layout, and set it as the central widget for the main window
 tv_shows_widget = QtWidgets.QWidget()
 tv_shows_widget.setLayout(tv_shows_layout)
-
-# Create the tab widget
-tab_widget = QtWidgets.QTabWidget()
 
 # Create a widget to hold the contents of the "TV Shows" tab
 tv_shows_tab_contents = QtWidgets.QWidget()
@@ -126,16 +126,9 @@ def on_checkbox_toggled(checked):
             match = re.search(r"S(\d+)$", show_name, re.IGNORECASE)
             if match:
                 season_number = match.group(1)
-                season_episode = "S" + season_number.zfill(2) + season_episode
+                season_episode = "S" + season_number.zfill(2) + "E" + season_episode
                 show_name = show_name[:-len(match.group(0))].strip()
-            
-            # If there are more than 2 digits after the "S", assume that they are episode numbers and
-            # add "E" before the numbers if there is not already an "E" in the string
-            if len(season_episode[1:]) > 2:
-                if "E" not in season_episode:
-                    season_episode = "S" + season_episode[1:3] + "E" + season_episode[3:]
-
-            
+                
             # If the season and episode details do not start with "S" and "E", assume that it is just the episode number
             # and add "S01E" before the numbers
             if not season_episode.startswith("S") and not season_episode.startswith("E"):
