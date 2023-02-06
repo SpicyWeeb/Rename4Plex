@@ -89,109 +89,120 @@ tv_shows_tab_contents.setLayout(tv_shows_layout)
 tab_widget.addTab(tv_shows_tab_contents, "TV Shows")
 
 def on_checkbox_toggled(checked):
+
     if checked:
-        import os
-        import re
-        import time
-        import shutil
-        
         # Define the directories
         source_dir = source_directory_edit.text()
         target_dir = target_directory_edit.text()
         
         # Define the regex pattern for removing everything inside brackets and parentheses
         pattern = r"\[.*?\]|\(.*?\)"
-        
-        # get all directories in source_dir and its subdirectories
-        all_dirs = []
-        for root, dirs, files in os.walk(source_dir):
-            for dir in dirs:
-                all_dirs.append(os.path.join(root, dir))
 
-        # rename all directories to "temp"
-        for dir in all_dirs:
-            os.rename(dir, os.path.join(os.path.dirname(dir), "temp"))
-        
-        # get all files in source_dir and its subdirectories
-        all_files = []
-        for root, dirs, files in os.walk(source_dir):
-            for file in files:
-                all_files.append(os.path.join(root, file))
+        if source_dir == '' or target_dir == '':
+            print("Please specify both source and target directories.")
+            checkbox.setChecked(False)
+        else:
+            import os
+            import re
+            import time
+            import shutil
+            
+            
+            # get all directories in source_dir and its subdirectories
+            all_dirs = []
+            for root, dirs, files in os.walk(source_dir):
+                for dir in dirs:
+                    all_dirs.append(os.path.join(root, dir))
+            
+            # get all files in source_dir and its subdirectories
+            all_files = []
+            for root, dirs, files in os.walk(source_dir):
+                for file in files:
+                    all_files.append(os.path.join(root, file))
 
-        # move all files to the source_dir
-        for file in all_files:
-            shutil.move(file, source_dir)
-            
-        # delete all empty subdirectories
-        for root, dirs, files in os.walk(source_dir, topdown=False):
-            for dir in dirs:
-                os.rmdir(os.path.join(root, dir))
-
-        # Get a list of all files in the source directory
-        files = os.listdir(source_dir)
-        
-        # Loop through the files
-        for file in files:
-            # Remove everything inside brackets and parentheses using the regex pattern
-            new_name = re.sub(pattern, "", file)
-            
-            # Split the file name at " - "
-            parts = new_name.split(" - ")
-            
-            # If there are less than 2 parts, skip this file
-            if len(parts) < 2:
-                continue
-            
-            # Get the show name, season and episode details
-            show_name = parts[0].strip()
-            season_episode = parts[1].strip()
-            
-            # Check if the show name ends with "Sx", where x is a number. If it does, extract the season number
-            # and add it to the season_episode string. Also, remove the "Sx" part from the show name.
-            match = re.search(r"S(\d+)$", show_name, re.IGNORECASE)
-            if match:
-                season_number = match.group(1)
-                season_episode = "S" + season_number.zfill(2) + "E" + season_episode
-                show_name = show_name[:-len(match.group(0))].strip()
+            # move all files to the source_dir
+            for file in all_files:
+                if not os.path.dirname(file) == source_dir:
+                    shutil.move(file, source_dir)
                 
-            # If the season and episode details do not start with "S" and "E", assume that it is just the episode number
-            # and add "S01E" before the numbers
-            if not season_episode.startswith("S") and not season_episode.startswith("E"):
-                season_episode = "S01E" + season_episode
-            
-            # Remove any spaces after the season and episode details
-            season_episode = season_episode.replace(" ", "")
-            
-            # Compute the new file name
-            new_file_name = show_name + " - " + season_episode
-            
-            # Compute the full path of the source and target files
-            old_file_path = os.path.join(source_dir, file)
-            
-            # Create a new directory for the show, if it doesn't already exist
-            show_dir = os.path.join(target_dir, show_name)
-            os.makedirs(show_dir, exist_ok=True)
-            
-            # Compute the full path of the new file, including the new show directory
-            new_file_path = os.path.join(show_dir, new_file_name)
-            
-            # Try to rename the file
-            try:
-                os.rename(old_file_path, new_file_path)
-            except OSError as e:
-                # If the error is WinError 32, print a message and wait for 5 seconds before continuing
-                if e.winerror == 32:
-                    print("Error: The file is being used by another process")
-                    time.sleep(5)
-                # If the error is WinError 183, print a message and try to replace the file
-                elif e.winerror == 183:
-                    print("Error: The file already exists, replaceing it.")
-                    os.replace(old_file_path, new_file_path)
-                # Otherwise, re-raise the error
-                else:
-                    raise e
+            # delete all empty subdirectories
+            for root, dirs, files in os.walk(source_dir, topdown=False):
+                for dir in dirs:
+                    os.rmdir(os.path.join(root, dir))
 
-        pass
+            # Get a list of all files in the source directory
+            files = os.listdir(source_dir)
+            
+            # Loop through the files
+            for file in files:
+                # Remove everything inside brackets and parentheses using the regex pattern
+                new_name = re.sub(pattern, "", file)
+                
+                # Split the file name at " - "
+                parts = new_name.split(" - ")
+                
+                # If there are less than 2 parts, skip this file
+                if len(parts) < 2:
+                    continue
+                
+                # Get the show name, season and episode details
+                show_name = parts[0].strip()
+                season_episode = parts[1].strip()
+                
+                # Check if the show name ends with "Sx", where x is a number. If it does, extract the season number
+                # and add it to the season_episode string. Also, remove the "Sx" part from the show name.
+                match = re.search(r"S(\d+)$", show_name, re.IGNORECASE)
+                if match:
+                    season_number = match.group(1)
+                    season_episode = "S" + season_number.zfill(2) + "E" + season_episode
+                    show_name = show_name[:-len(match.group(0))].strip()
+
+                # If the season and episode details do not start with "S" and "E", assume that it is just the episode number
+                # and add "S01E" before the numbers
+                if not season_episode.startswith("S") and not season_episode.startswith("E"):
+                    season_episode = "S01E" + season_episode
+                
+                # Remove any spaces after the season and episode details
+                season_episode = season_episode.replace(" ", "")
+                                
+                # Compute the new file name
+                new_file_name = show_name + " - " + season_episode
+                
+                # Compute the full path of the source and target files
+                old_file_path = os.path.join(source_dir, file)
+                
+                # Create a new directory for the show, if it doesn't already exist
+                show_dir = os.path.join(target_dir, show_name)
+                os.makedirs(show_dir, exist_ok=True)
+                
+                # Compute the full path of the new file, including the new show directory
+                new_file_path = os.path.join(show_dir, new_file_name)
+                
+                # Try to rename the file
+                try:
+                    os.rename(old_file_path, new_file_path)
+                    if os.path.exists(new_file_path):
+                        print(f"Successfully renamed {old_file_path} to {new_file_path}")
+                    else:
+                        print(f"Error: Could not rename {old_file_path} to {new_file_path}")
+                except Exception as e:
+                    print(f"Error: Could not rename {old_file_path} to {new_file_path} - {e}")
+                    time.sleep(1) # add a delay of 1 second between each file move
+                except OSError as e:
+                    # If the error is WinError 32, print a message and wait for 5 seconds before continuing
+                    if e.winerror == 32:
+                        print("Error: The file is being used by another process")
+                        time.sleep(5)
+                    # If the error is WinError 183, print a message and try to replace the file
+                    elif e.winerror == 183:
+                        print("Error: The file already exists, replaceing it.")
+                        os.replace(old_file_path, new_file_path)
+                    # Otherwise, re-raise the error
+                    else:
+                        raise e
+                    
+
+            pass
 
 checkbox.stateChanged.connect(on_checkbox_toggled)
 
